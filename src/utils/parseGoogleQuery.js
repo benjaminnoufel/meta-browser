@@ -1,19 +1,18 @@
 import {JSDOM} from "jsdom";
 import got from "got";
-import {Link, SearchResult} from "@/types";
-import {GOOGLE_URL} from "@/constants";
-import {options} from "@/options";
+import {GOOGLE_URL} from "../constants.js";
+import {options} from "../options.js";
 
-export async function parseGoogleQuery(q: string): Promise<SearchResult[]> {
+export async function parseGoogleQuery(q) {
 	const {body} = await got.get(`${GOOGLE_URL}${q}`, options)
 	const dom = new JSDOM(body)
-	const items: NodeListOf<HTMLElement> = dom.window.document.querySelectorAll('div.g')
-	let results: SearchResult[] = []
-	const urls: Record<string, boolean> = {}
+	const items = dom.window.document.querySelectorAll('div.g')
+	let results = []
+	const urls = {}
 
-	items.forEach((item: HTMLElement) => {
-		const link = item.querySelector("a")!.href
-		const title = item.querySelector("h3")!.textContent ?? ""
+	items.forEach((item) => {
+		const link = item.querySelector("a").href
+		const title = item.querySelector("h3").textContent ?? ""
 		const desc = item.querySelector(".VwiC3b")
 		const cite = item.querySelector("cite")
 
@@ -40,9 +39,9 @@ export async function parseGoogleQuery(q: string): Promise<SearchResult[]> {
 	return results
 }
 
-function extractRelated(s: HTMLAnchorElement[]): Link[] {
-	const selection: Link[] = []
-	s.forEach((item: HTMLAnchorElement) => {
+function extractRelated(s) {
+	const selection = []
+	s.forEach((item) => {
 		const title = item.querySelector("span")
 		if (!title) {
 			return
@@ -59,14 +58,14 @@ function extractRelated(s: HTMLAnchorElement[]): Link[] {
 
 }
 
-function extractSameSite(s: HTMLElement, r: SearchResult[]) {
+function extractSameSite(s, r) {
 	const items = s.querySelectorAll('.mslg')
 	items.forEach((item) => {
 		const title = item.querySelector("h3")
 		if (!title) {
 			return
 		}
-		const link = title.querySelector("a")!.href
+		const link = title.querySelector("a").href
 		const {hostname} = new URL(link)
 		const desc = title.nextElementSibling ? title.nextElementSibling.innerHTML : "<br/>"
 		r.push({
@@ -83,13 +82,13 @@ function extractSameSite(s: HTMLElement, r: SearchResult[]) {
  * @param {HTMLElement} s
  * @param {array} r
  */
-function extractNestedLi(s: HTMLElement, r: SearchResult[]) {
+function extractNestedLi(s, r) {
 	const items = s.querySelectorAll("li.MYVUIe")
 	items.forEach((item) => {
-		const title = item.querySelector("h3")!
-		const link = (<HTMLAnchorElement>title.parentElement).href
+		const title = item.querySelector("h3")
+		const link = title.parentElement.href
 		const {hostname} = new URL(link)
-		const desc = item.querySelector("div[data-content-feature]")!.innerHTML
+		const desc = item.querySelector("div[data-content-feature]").innerHTML
 		r.push({
 			title: title.textContent ?? "",
 			link,

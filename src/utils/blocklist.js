@@ -1,9 +1,9 @@
-const blocklist: string[] = []
+const blocklist = []
 
 /**
  * @param {string} site
  */
-export function isBlocked(site: string) {
+export function isBlocked(site) {
 	for (const item of blocklist) {
 		if (site.includes(item)) {
 			return true

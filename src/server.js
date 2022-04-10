@@ -1,12 +1,10 @@
-import createFastifyServer, {FastifyReply, FastifyRequest} from "fastify";
+import createFastifyServer from "fastify";
 import Cors from "fastify-cors";
 import Static from "fastify-static"
-import {parseGoogleQuery} from "@utils/parseGoogleQuery";
-import {parseDdgQuery} from "@/utils/ParseDdgQuery";
-import {parseFilterBangs} from "@/utils/bangs";
+import {parseGoogleQuery} from "./utils/parseGoogleQuery.js";
+import {parseDdgQuery} from "./utils/ParseDdgQuery.js";
+import {parseFilterBangs} from "./utils/bangs.js";
 import * as path from "path";
-import {SearchResult} from "@/types";
-import {RouteGenericInterface} from "fastify/types/route";
 
 const fastify = createFastifyServer({
 	logger: true,
@@ -23,14 +21,14 @@ fastify.register(Static, {
 
 const routeOptions = {};
 
-function serveWithParser(fn: (q: string) => Promise<SearchResult[]>) {
-	return function (request: FastifyRequest<RouteGenericInterface & {QueryString: {q: string}}>, reply: FastifyReply) {
-		const {q} = <{q: string}>request.query
+function serveWithParser(fn) {
+	return function (request, reply) {
+		const {q} = request.query
 		return fn(parseFilterBangs(q))
 	}
 }
 
-fastify.get("/", routeOptions, async (request: FastifyRequest, reply) => {
+fastify.get("/", routeOptions, async (request, reply) => {
 	return reply.sendFile('index.html')
 })
 
